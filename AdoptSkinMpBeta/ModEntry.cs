@@ -131,6 +131,7 @@ namespace AdoptSkinMpBeta
             Helper.ConsoleCommands.Add("asdebug_force_ids", "[DEBUG] Assigns all creatures new Short IDs, overriding backend locks.", Commander.OnCommandReceived);
             Helper.ConsoleCommands.Add("asdebug_force_add_all", "[DEBUG] Wipes the A&S properties from all Pets, Horses, and FarmAnimals and then adds them back into A&S all fresh and new. This will reset skins and shirt IDs.", Commander.OnCommandReceived);
             Helper.ConsoleCommands.Add("asdebug_force_remove_all", "[DEBUG] Wipes the A&S properties from all Pets, Horses, and FarmAnimals.", Commander.OnCommandReceived);
+            Helper.ConsoleCommands.Add("asdebug_ranch_refresh", "[DEBUG] Refreshes the skins at Marnie's ranch to new ones.", Commander.OnCommandReceived);
         }
 
 
@@ -238,8 +239,10 @@ namespace AdoptSkinMpBeta
         /// <returns>Returns the ID number of the skin, if successfully set.</returns>
         internal static int SetSkin(Character creature, int skinID)
         {
+            string creatureType = ModApi.GetInternalType(creature);
+            
             // Ensure that the given skin is available for use
-            if (!DoesSkinExist(ModApi.GetInternalType(creature), skinID))
+            if (!DoesSkinExist(creatureType, skinID))
                 return 0;
 
             // Ensure that the player can only change the skin of a horse being ridden if they are the one riding it
@@ -272,6 +275,16 @@ namespace AdoptSkinMpBeta
             // Set the skin
             return SetSkin(creature, Assets[creatureType].ElementAt(randomLookup).Key);
         }
+
+        /// <summary>Returns the reference number of a random potential skin for the given creature type.</summary>
+        internal static int GetRandomSkin(string creatureType)
+        {
+            creatureType = Sanitize(creatureType);
+            if (!ModApi.HasSkins(creatureType))
+                return 0;
+            int randomLookup = Randomizer.Next(0, Assets[creatureType].Keys.Count);
+            return Assets[creatureType].ElementAt(randomLookup).Key;
+        }
         
 
         /// <summary>Returns the CreatureSkin instance for the skin asset that has been assigned to the given Pet, Horse, or FarmAnimal.
@@ -297,6 +310,17 @@ namespace AdoptSkinMpBeta
                 return Assets[type][skinID];
 
             return null;
+        }
+
+        internal static CreatureSkin GetSkin(string type, int skinID)
+        {
+            type = Sanitize(type);
+            if (Assets.ContainsKey(type) && Assets[type].ContainsKey(skinID))
+                return Assets[Sanitize(type)][skinID];
+            else if (Assets.ContainsKey(type))
+                return Assets[type][GetRandomSkin(type)];
+            else
+                return null;
         }
         
 
@@ -331,6 +355,32 @@ namespace AdoptSkinMpBeta
             }
 
             return true;
+        }
+
+        /// <summary>Refreshes skins for Marnie's cows.</summary>
+        internal static void RanchRefresh()
+        {
+            foreach (GameLocation loc in Game1.locations)
+            {
+                if (loc is Forest forest)
+                    foreach (FarmAnimal animal in forest.marniesLivestock)
+                    {
+                        string type = ModApi.GetInternalType(animal);
+
+                        // Random chance for cow to be a calf
+                        int randomLookup = Randomizer.Next(0, 100);
+                        if (randomLookup <= 15)
+                            type = ModApi.GetInternalBabyType(type);
+
+                        // Set a skin if A&S has cow skins available to it
+                        if (ModApi.HasSkins(type))
+                        {
+                            int[] spriteInfo = ModApi.GetSpriteInfo(animal);
+                            CreatureSkin skin = ModEntry.GetSkin(type, ModEntry.GetRandomSkin(type));
+                            animal.Sprite = new AnimatedSprite(skin.AssetKey, spriteInfo[0], spriteInfo[1], spriteInfo[2]);
+                        }
+                    }
+            }
         }
         
 
@@ -541,12 +591,7 @@ namespace AdoptSkinMpBeta
                     ModEntry.UpdateSkin(creature);
 
                 // Make sure Marnie's cows put some clothes on
-                foreach (GameLocation loc in Game1.locations)
-                {
-                    if (loc is Forest forest)
-                        foreach (FarmAnimal animal in forest.marniesLivestock)
-                            ModEntry.RandomizeSkin(animal);
-                }
+                RanchRefresh();
             }
         }
 

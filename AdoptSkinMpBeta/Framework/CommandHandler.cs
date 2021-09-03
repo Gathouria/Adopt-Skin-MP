@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using StardewValley;
+using StardewValley.Locations;
 using StardewValley.Characters;
 using StardewModdingAPI;
 
@@ -33,6 +34,9 @@ namespace AdoptSkinMpBeta.Framework
         {
             switch(command)
             {
+                case "asdebug_ranch_refresh":
+                    ModEntry.RanchRefresh();
+                    return;
                 case "asdebug_force_ids":
                     // ** TODO: existing save does not seem to reassign short IDs for those that were missing them. This is attempting to fix that while I figure out
                     // how to deal with it.

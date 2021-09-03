@@ -98,6 +98,11 @@ namespace AdoptSkinMpBeta
             return "";
         }
 
+        public static string GetInternalBabyType(string creatureType)
+        {
+            return ("baby" + creatureType);
+        }
+
         /// <summary>Returns true if the given creature subtype (i.e. Dog, Cat, WhiteChicken) has at least one custom skin loaded for it in A&S.</summary>
         public static bool HasSkins(string type) { return (ModEntry.Assets.ContainsKey(ModEntry.Sanitize(type)) && (ModEntry.Assets[ModEntry.Sanitize(type)]).Count > 0); }
 
