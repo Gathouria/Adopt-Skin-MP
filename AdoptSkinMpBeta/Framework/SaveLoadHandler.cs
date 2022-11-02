@@ -153,8 +153,8 @@ namespace AdoptSkinMpBeta.Framework
             // Add custom sprites
             // TODO: Skin content packages. Grab the directory for the /Mods folder from /Mods/AdoptSkin
             foreach (string path in Directory.EnumerateFiles(Path.Combine(SHelper.DirectoryPath, "assets", "skins"), "*", SearchOption.AllDirectories))
-                PullSprite(path);
-            
+                PullSprite(Path.GetRelativePath(SHelper.DirectoryPath, path)); // must be a relative path
+
             foreach (string path in Directory.EnumerateFiles(Path.Combine(SHelper.DirectoryPath)))
 
             // Warn for invalid files

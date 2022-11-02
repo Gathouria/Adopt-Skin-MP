@@ -124,13 +124,13 @@ namespace AdoptSkinMpBeta
 
         public static bool HasShearedSprite(string type) { return ModEntry.Assets.ContainsKey("sheared" + ModEntry.Sanitize(type)); }
         /// <summary>Returns whether the given instance of Horse is an instance of a tractor from the tractors mod.</summary>
-        public static bool IsNotATractor(Horse horse) { return !horse.Name.StartsWith("tractor/"); }
+        public static bool IsNotATractorOrCart(Horse horse) { return !horse.Name.StartsWith("tractor/") && !horse.Name.StartsWith("Mods/TrainTracks/"); }
 
         /// <summary>Returns an enumerable list of all Horse instances. This excludes tractors.</summary>
         public static IEnumerable<Horse> GetHorses()
         {
             foreach (NPC npc in Utility.getAllCharacters())
-                if (npc is Horse horse && ModApi.IsNotATractor(horse))
+                if (npc is Horse horse && ModApi.IsNotATractorOrCart(horse))
                     yield return horse;
             foreach (Horse horse in GetMountedHorses())
                 yield return horse;
@@ -143,7 +143,7 @@ namespace AdoptSkinMpBeta
         public static IEnumerable<Horse> GetMountedHorses()
         {
             foreach (Farmer farmer in Game1.getAllFarmers())
-                if (farmer.mount != null && IsNotATractor(farmer.mount))
+                if (farmer.mount != null && IsNotATractorOrCart(farmer.mount))
                     yield return farmer.mount;
         }
 
